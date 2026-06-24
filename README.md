@@ -32,7 +32,7 @@ Pendekatan ini menggabungkan kekuatan beberapa algoritma machine learning:
 Pipeline terdiri dari tiga tahap utama yang saling terhubung:
 
 ```
-[Raw Data] → [01_EDA] → [02_PREPROCESSING] → [03_FEATURE_ENGINEERING] → [Model Output]
+[Raw Data] → [01_EDA] → [02_Preprocessing] → [03_Feature_Engineering] → [04_Modeling] → [05_Evaluasi] → [Model Output]
 ```
 
 Setiap notebook memiliki tanggung jawab spesifik dalam transformasi dan analisis data menuju model prediktif akhir.
@@ -100,189 +100,107 @@ Hasil pengukuran dari tes darah dan pemeriksaan laboratorium:
 
 ## Deskripsi Notebook
 
-### 1. 01_EDA.ipynb - Exploratory Data Analysis
+### 1. 01_EDA.ipynb — Exploratory Data Analysis
 
-Notebook pertama melakukan eksplorasi menyeluruh terhadap dataset untuk memahami karakteristik, pola, dan hubungan antar variabel.
+Notebook ini berfokus pada eksplorasi menyeluruh terhadap dataset klinis untuk memahami karakteristik, pola distribusi, kualitas data, dan hubungan multivariat awal antar-fitur.
 
 **Tahapan Utama:**
-
-a) **Loading dan Inspeksi Data**
-   - Membaca dataset UCI medical
-   - Menampilkan dimensi dataset (jumlah baris dan kolom)
-   - Menampilkan info struktur data dan tipe variabel
-
-b) **Analisis Kualitas Data**
-   - Deteksi missing values di seluruh dataset
-   - Identifikasi dan penanganan duplikat records
-   - Evaluasi kompletness data per fitur
-
-c) **Statistik Deskriptif**
-   - Ringkasan statistik untuk fitur medis pilihan
-   - Measure of central tendency dan dispersi
-   - Quartile analysis untuk outlier detection
-
-d) **Visualisasi Distribusi**
-   - Distribusi kelas target (Gallstone Status)
-   - Histograms dan distribusi per modalitas fitur
-   - Identifikasi imbalance dalam target variable
-
-e) **Analisis Korelasi Multivariat**
-   - Korelasi obesity indicators (VFR, BMI) terhadap status batu empedu
-   - Profil lipid analysis (TC, LDL, HDL, Triglyceride) vs target
-   - Matriks korelasi antar-fitur klinis utama
-   - Heatmap untuk visualisasi hubungan fitur
-
-f) **Exploratory Insights**
-   - Identifikasi fitur yang paling berkorelasi dengan target
-   - Deteksi potential multicollinearity issues
-   - Pattern discovery dalam data demografis
+* **Loading & Inspeksi Data:** Membaca dataset utama (`dataset-uci.csv`), memeriksa dimensi, tipe data (numerik vs. kategorikal), dan struktur dasar dataset.
+* **Analisis Kualitas Data:** Mendeteksi nilai yang hilang (*missing values*), memeriksa rekaman duplikat, dan mengevaluasi kelengkapan data klinis.
+* **Statistik Deskriptif:** Menampilkan ringkasan statistik (*mean*, *median*, standar deviasi, dan kuartil) untuk fitur-fitur medis utama guna mendeteksi pencilan (*outliers*).
+* **Visualisasi Distribusi:** Pembuatan grafik distribusi variabel target (`Gallstone Status`) untuk mengidentifikasi tingkat ketidakseimbangan kelas (*class imbalance*), serta distribusi fitur berbasis modalitas.
+* **Matriks Korelasi Multivariat:** Pembuatan *heatmap* matriks korelasi Spearman/Pearson untuk fitur klinis utama—seperti indikator obesitas (VFR, BMI), profil lipid (TC, Triglyceride), dan enzim hati (ALT)—terhadap status batu empedu.
 
 **Output:**
-- Pemahaman mendalam tentang struktur dan karakteristik dataset
-- Identifikasi fitur-fitur penting
-- Rekomendasi untuk tahap preprocessing
+* Pemahaman mendalam terkait struktur data dan temuan awal *multicollinearity*.
+* Rekomendasi fitur penting untuk diproses ke tahap pembersihan data.
 
 ---
 
-### 2. 02_PREPROCESSING.ipynb - Data Preprocessing
+### 2. 02_PREPROCESSING.ipynb — Data Preprocessing
 
-Notebook kedua melakukan transformasi data untuk mempersiapkan input model machine learning.
+Notebook ini melakukan transformasi data mentah menjadi format yang siap digunakan oleh algoritma *machine learning*, dengan fokus menjaga integritas data tanpa kebocoran (*data leakage*).
 
 **Tahapan Utama:**
-
-a) **Feature Selection**
-   - Pemisahan fitur klinis (X) dari target diagnosis (y)
-   - Organisasi fitur berdasarkan tiga modalitas:
-     * Fitur demografis (7 fitur)
-     * Fitur fisik (18 fitur)
-     * Fitur kimia (13 fitur)
-
-b) **Train-Test Split**
-   - Pembagian dataset menjadi training (80%) dan testing (20%)
-   - Implementasi stratified split untuk mempertahankan class balance
-   - Menggunakan random_state=42 untuk reproducibility
-   - Output: X_train (255, 38), X_test (64, 38)
-
-c) **Standardisasi Fitur**
-   - Aplikasi StandardScaler untuk normalisasi skala fitur
-   - Fit scaler hanya pada training set untuk mencegah data leakage
-   - Transform testing set menggunakan parameter dari training set
-   - Preservasi column names dan index dalam output
-
-d) **Segmentasi Fitur Berdasarkan Modalitas**
-   - Pembentukan subset per modalitas untuk training data:
-     * X_train_demografi
-     * X_train_fisik
-     * X_train_kimia
-   - Pembentukan subset per modalitas untuk testing data:
-     * X_test_demografi
-     * X_test_fisik
-     * X_test_kimia
+* **Pemisahan Fitur & Target:** Memisahkan matriks fitur klinis ($X$) dari target diagnosis ($y$).
+* **Segmentasi Modalitas Klinis Awal:** Mengelompokkan fitur ke dalam 3 kategori medis: Fitur Demografi, Fitur Fisik (Bioimpedans), dan Fitur Kimia (Lab Darah).
+* **Stratified Train-Test Split:** Membagi dataset menjadi **80% Training set** dan **20% Testing set** menggunakan metode *Stratified Sampling* (`random_state=42`) agar proporsi kelas target tetap seimbang di kedua subset.
+* **Standardisasi Skala Fitur:** Menerapkan `StandardScaler` untuk menyamakan skala fitur numerik. *Scaler* hanya disesuaikan (*fit*) pada data training, kemudian mentransformasikan data training dan testing guna menghindari *data leakage*.
 
 **Output:**
-- Standardized training dan testing sets
-- Fitur-fitur yang terorganisir per modalitas
-- Data siap untuk tahap feature engineering dan modeling
-
-**Prinsip Penting:**
-- Mencegah data leakage dengan fit scaler hanya pada training set
-- Mempertahankan stratifikasi untuk class balance
-- Modular organization untuk memfasilitasi per-modalitas processing
+* `X_train_scaled` dan `X_test_scaled` yang mempertahankan nama kolom serta indeks asli.
+* Data yang siap disegmentasikan lebih lanjut pada tahap *feature engineering*.
 
 ---
 
-### 3. 03_FEATURE_ENGINEERING.ipynb - Feature Engineering & Stacking Ensemble
+### 3. 03_FEATURE_ENGINEERING.ipynb — Feature Engineering & Modal Segmentation
 
-Notebook ketiga mengimplementasikan feature engineering lanjutan dan membangun arsitektur stacking ensemble multi-modal dua tingkat.
+Notebook ini mengimplementasikan penyaringan multikolinieritas yang ketat per modalitas serta melakukan penyimpanan objek data siap latih.
 
 **Tahapan Utama:**
+* **Analisis Korelasi per Modalitas:** Memeriksa matriks korelasi secara terisolasi pada masing-masing kelompok fitur (Fisik, Kimia, Demografi) menggunakan visualisasi *heatmap*.
+* **Eliminasi Multikolinieritas:** Menerapkan fungsi kustom `drop_high_corr()` dengan ambang batas (*threshold*) korelasi tertentu (misal: `0.85`). Fitur yang redundan atau memiliki korelasi terlalu tinggi dengan fitur lain dalam modalitas yang sama akan dihapus.
+* **Penyimpanan Subset Data Terstruktur:** Memisahkan dan menyimpan data hasil penyaringan ke dalam direktori khusus (`../prepare/`) dalam format `.csv` untuk fitur dan `.npy` untuk label:
+  * **Fitur Fisik:** `X_train_fisik.csv`, `X_test_fisik.csv`
+  * **Fitur Kimia:** `X_train_kimia.csv`, `X_test_kimia.csv`
+  * **Fitur Demografi:** `X_train_demografi.csv`, `X_test_demografi.csv`
+  * **Label Target:** `y_train.npy`, `y_test.npy`
 
-a) **Data Preparation Review**
-   - Reload dataset dan preprocessing ulang
-   - Replicasi split dan standardisasi dari notebook sebelumnya
-   - Pemisahan fitur per modalitas untuk processing terpisah
+**Output:**
+* Subset data rendah redundansi yang siap disuplai ke masing-masing *base learner*.
 
-b) **Analisis Korelasi Per Modalitas**
-   - Heatmap korelasi untuk fitur fisik
-   - Heatmap korelasi untuk fitur kimia
-   - Heatmap korelasi untuk fitur demografis
-   - Identifikasi multicollinearity patterns
+---
 
-c) **Eliminasi Multikolinieritas**
-   - Implementasi fungsi drop_high_corr()
-   - Threshold korelasi 0.85 untuk dropping highly correlated features
-   - Filtering per modalitas untuk mengurangi redundansi
-   - Output: feature subset yang lebih lean dengan information preservation
+### 4. 04_MODELING.ipynb — Multi-Modal Stacking Architecture
 
-d) **Tier 1 - Base Learners**
+Notebook ini membangun arsitektur *Ensemble Stacking* dua tingkat (*Tier*) dengan memanfaatkan spesialisasi model pada tiap modalitas data.
 
-   **Model 1: XGBoost (Modalitas Fisik)**
-   - Hyperparameters:
-     * n_estimators: 200
-     * max_depth: 4
-     * learning_rate: 0.05
-     * subsample: 0.8
-     * colsample_bytree: 0.8
-   - Training pada fitur fisik (X_train_fisik)
-   - Output: probabilitas kelas (P_fisik)
+**Tahapan Utama:**
+* **Tier 1 — Pelatihan Base Learners:**
+  * **Model Fisik (XGBoost):** Dilatih khusus menggunakan data fitur fisik (`X_train_fisik`) untuk menangkap pola bioimpedans tubuh.
+  * **Model Kimia (LightGBM):** Dilatih khusus menggunakan data fitur kimia (`X_train_kimia`) untuk mengekstrak informasi dari hasil laboratorium darah.
+* **Generasi Meta-Features (Probabilitas Kontinu):** Mengonversi hasil prediksi *Tier 1* dari data training menjadi nilai probabilitas kontinu ($P_{fisik}$ dan $P_{kimia}$).
+* **Formasi Matriks Tier 2:** Menggabungkan probabilitas prediksi ($P_{fisik}$, $P_{kimia}$) dengan fitur mentah dari modalitas Demografi untuk membentuk matriks *meta-features* baru setebal 9 kolom.
+* **Tier 2 — Pelatihan Meta-Learner:** Melatih model `LogisticRegression` sebagai pengambil keputusan final berdasarkan kombinasi pola prediksi *base learners* dan data demografi pasien.
+* **Model Persistence:** Menyimpan objek model yang telah dilatih ke folder `../save_model/` (`model_fisik.pkl`, `model_kimia.pkl`, dan `meta_learner.pkl`) serta mengekspor hasil prediksi mentah test set ke `hasil_prediksi.csv`.
 
-   **Model 2: LightGBM (Modalitas Kimia)**
-   - Hyperparameters:
-     * n_estimators: 200
-     * max_depth: 4
-     * learning_rate: 0.05
-     * num_leaves: 31
-     * subsample: 0.8
-   - Training pada fitur kimia (X_train_kimia)
-   - Output: probabilitas kelas (P_kimia)
+**Output:**
+* Pipeline model *ensemble* yang tersimpan dan siap diuji.
 
-   **Model 3: Logistic Regression (Modalitas Demografis)**
-   - Direct use of demografis features sebagai complementary input
-   - Dimasukkan ke Tier 2 sebagai raw features
+---
 
-e) **Tier 2 - Meta-Features Formation**
+### 5. 05_EVALUASI.ipynb — Model Evaluation & Interpretation
 
-   Pembentukan matriks meta-features yang menggabungkan:
-   - Probabilitas prediksi dari XGBoost (P_fisik)
-   - Probabilitas prediksi dari LightGBM (P_kimia)
-   - Raw demografis features
-   - Format: meta_train = [P_fisik | P_kimia | Demografis]
+Notebook ini melakukan pengujian komprehensif terhadap kinerja model menggunakan data uji (*test set*) yang belum pernah dilihat sebelumnya serta memvisualisasikan matriks performa.
 
-f) **Tier 2 - Meta-Learner Training**
+**Tahapan Utama:**
+* **Inference Global:** Memuat kembali semua model dari direktori `../save_model/`, mengalirkan data uji melalui Tier 1 hingga menghasilkan keputusan final di Tier 2.
+* **Kalkulasi Metrik Performa:** Menghitung skor evaluasi standar industri:
+  * *Accuracy Score*
+  * *ROC-AUC Score* (Kemampuan diskriminasi model)
+  * *F1-Score* (Keseimbangan Precision dan Recall)
+* **Visualisasi Evaluasi Klinis:**
+  * Pembuatan *Heatmap Confusion Matrix* untuk melihat representasi *False Positive* dan *False Negative*.
+  * Penggambaran Kurva ROC untuk mengevaluasi *True Positive Rate* versus *False Positive Rate*.
+* **Cetak Ringkasan Box Teks:** Menampilkan teks konsol terformat rapi berupa diagram kotak ringkasan arsitektur beserta skor final metrik evaluasi.
 
-   **Meta-Classifier: Logistic Regression**
-   - Hyperparameters:
-     * C: 1.0
-     * max_iter: 1000
-     * random_state: 42
-   - Training pada matriks meta-features
-   - Learning dari pola kombinasi base learner predictions
+**Output:**
+* Laporan performa komprehensif beserta aset visualisasi yang disimpan ke folder `../result/`.
 
-g) **Model Inference dan Prediksi**
-   - Inference pada test set untuk semua base learners
-   - Pengumpulan probabilitas base learners
-   - Formation matriks meta-features untuk test
-   - Final prediction dari meta-learner
+---
 
-h) **Model Evaluation**
+### 6. 06_FULL_PIPELINE.ipynb — End-to-End Execution
 
-   **Metrics Perhitungan:**
-   - Accuracy Score
-   - ROC-AUC Score
-   - F1-Score (weighted average)
-   - Precision dan Recall per kelas
-   - Matthews Correlation Coefficient (MCC)
+Notebook konsolidasi yang menyatukan seluruh alur kerja—mulai dari pembersihan data mentah hingga evaluasi akhir—ke dalam satu *script execution* yang runtun dan modular.
 
-   **Visualization:**
-   - Confusion Matrix heatmap
-   - ROC-AUC curve
-   - Classification report detail
+**Tahapan Utama:**
+* **Kombinasi Alur Kerja Tunggal:** Mengintegrasikan fungsi *preprocessing*, pemisahan data terstratifikasi, seleksi fitur berbasis korelasi, hingga pelatihan arsitektur *stacking ensemble* dalam satu alur eksekusi tanpa jeda.
+* **Skema Cross-Validation Terstratifikasi:** Menggunakan teknik seperti *Stratified K-Fold Cross Validation* untuk menghasilkan *meta-features* yang kuat dan bebas dari bias *overfitting*.
+* **Analisis Koefisien Meta-Learner:** Mengekstrak nilai bobot/koefisien dari `LogisticRegression` di Tier 2 untuk mengetahui kontribusi relatif dari $P_{fisik}$, $P_{kimia}$, maupun komponen demografi.
+* **Visualisasi Kontribusi Fitur:** Pembuatan grafik batang horizontal untuk koefisien *meta-learner* (diwarnai Merah untuk fitur penambah risiko, dan Biru untuk fitur penurun risiko batu empedu) serta mengekspor hasilnya menjadi `meta_learner_coefficients.png`.
 
-i) **Analisis Separabilitas Ruang Keputusan**
-   - Scatter plot dari meta-features 2D
-   - Visualisasi decision boundary
-   - Color-coded points berdasarkan predicted class
-   - Assessment spatial separability antar kelas
+**Output:**
+* Pipeline produksi *end-to-end* yang dapat direplikasi penuh (*fully reproducible*) untuk kebutuhan *deployment* atau pengujian dataset baru.
 
 **Arsitektur Model:**
 
@@ -323,9 +241,19 @@ i) **Analisis Separabilitas Ruang Keputusan**
    - Prerequisit: Raw dataset (../data/dataset-uci.csv)
 
 3. **Jalankan 03_FEATURE_ENGINEERING.ipynb**
-   - Tujuan: Feature engineering dan training stacking ensemble
-   - Output: Model terlatih dan evaluation metrics
+   - Tujuan: Feature engineering
+   - Output: Model simpan semua fitur yg diperlukan untuk train
    - Prerequisit: Menggunakan transformasi dari notebook sebelumnya
+
+4. **Jalankan 04_Modeling.ipynb**
+   - Tujuan: Membangun model dan melakukan train ensemble model
+   - Output: save_model.pkl, menyimpan hasil terbaik dari train model
+   - prerequisit: Menggunakan transformasi dari notebook sebelumnya
+
+5. **Jalankan 05_Evaluasi.ipynb**
+   - Tujuan: Melakukan evaluasi dari hasil train model yang sudah dilakukan
+   - Output: hasil analisis akhir mengenai model yang telah digunakan
+   - prerequisit: Menggunakan transformasi dari notebook sebelumnya
 
 **Catatan Penting:**
 - Setiap notebook berdiri independen namun mengikuti urutan logis
@@ -446,4 +374,4 @@ Dataset berasal dari UCI Machine Learning Repository. Penggunaan sesuai dengan l
 
 **Dibuat untuk: Medical Diagnosis Prediction System**
 
-Terakhir diupdate: 2024
+Terakhir diupdate: 24 Juni 2026
