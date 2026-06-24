@@ -1,0 +1,52 @@
+# ==============================================================================
+# OS GENERATED FILES
+# ==============================================================================
+.DS_Store
+Thumbs.db
+
+# ==============================================================================
+# PYTHON & CACHE
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# ==============================================================================
+# VIRTUAL ENVIRONMENTS (Wajib diabaikan agar tidak masuk GitHub)
+# ==============================================================================
+.venv/
+venv/
+env/
+ENV/
+
+# ==============================================================================
+# JUPYTER NOTEBOOK CHECKPOINTS
+# ==============================================================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# ==============================================================================
+# DATASETS & INPUTS (Saran: File data besar sebaiknya tidak di-push)
+# ==============================================================================
+# Mengabaikan semua folder data/input/csv
+data/
+inputs/
+datasets/
+*.csv
+*.xlsx
+
+# ==============================================================================
+# MODELS & OUTPUTS (Hasil blending model, pickle, atau bobot)
+# ==============================================================================
+# Mengabaikan folder output agar tidak membebani repository
+models/
+outputs/
+saved_models/
+*.pkl
+*.joblib
+*.h5
+
+# Exclude file requirements.txt dan .gitignore itu sendiri agar tetap terlacak
+!.gitignore
+!requirements.txt
